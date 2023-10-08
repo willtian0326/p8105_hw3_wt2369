@@ -1,0 +1,7 @@
+---
+title: "Homework 3"
+author: "Wenxin Tian"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
