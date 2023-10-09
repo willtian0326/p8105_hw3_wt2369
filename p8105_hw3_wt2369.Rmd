@@ -5,3 +5,57 @@ date: "`r Sys.Date()`"
 output: github_document
 ---
 
+```{r}
+library(tidyverse)
+```
+
+## Problem 1:
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+__Dataset description__:
+
+The dataset shows `r nrow(instacart)` observations of `r ncol(instacart)` variables. Some key variables include product name and id, which aisle and department it was bought from, the order in which the item was added to cart, and whether the item was reordered, meaning it was ordered before by the same customer. For example, here are the first 5 products listed in the dataset:
+
+```{r}
+head(instacart, 5) |>
+  knitr::kable()
+```
+
+__Questions:__
+
+__1. How many aisles are there, and which aisles are the most items ordered from?__
+
+```{r}
+instacart |>
+  group_by(aisle) |>
+  summarize(count = n()) |>
+  arrange(desc(count))
+```
+
+There are 134 aisles, and the top 5 aisles where the most items are ordered from are fresh vegetables, fresh fruits, packaged vegetable and fruits, yogurt, and packaged cheese.
+
+__2. Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.__
+
+```{r}
+instacart |>
+  group_by(aisle) |>
+  summarize(count = n()) |>
+  filter(count >= 10000) |>
+  arrange(desc(count)) |>
+  mutate(aisle = fct_reorder(aisle, count)) |> # had to reorder the aisle factor
+  ggplot(
+    aes(x = count, y = aisle),
+  ) +
+  geom_col() +
+  labs(
+      title = "Popular Aisles",
+      x = "Item Count",
+      y = "Aisle"
+    ) +
+  theme_minimal()
+```
+
