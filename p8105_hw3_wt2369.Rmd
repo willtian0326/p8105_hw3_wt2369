@@ -59,3 +59,43 @@ instacart |>
   theme_minimal()
 ```
 
+__3. Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.__
+
+```{r}
+baking = 
+  instacart |>
+  filter(aisle == "baking ingredients") |>
+  group_by(product_name) |>
+  summarize(count = n()) |>
+  arrange(desc(count)) |>
+  head(3) |>
+  mutate(aisle = "Baking Ingredients") |>
+  relocate(aisle)
+
+dog_food =
+  instacart |>
+  filter(aisle == "dog food care") |>
+  group_by(product_name) |>
+  summarize(count = n()) |>
+  arrange(desc(count)) |>
+  head(3) |>
+  mutate(aisle = "Dog Care and Food") |>
+  relocate(aisle)
+
+veg_fruit = 
+  instacart |>
+  filter(aisle == "packaged vegetables fruits") |>
+  group_by(product_name) |>
+  summarize(count = n()) |>
+  arrange(desc(count)) |>
+  head(3) |>
+  mutate(aisle = "Packaged Vegetable and Fruits") |>
+  relocate(aisle)
+
+knitr::kable(
+  list(baking, dog_food, veg_fruit),
+  caption = "Most Popular Items in Following Aisles"
+)
+
+```
+
