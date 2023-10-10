@@ -115,8 +115,24 @@ __4. Make a table showing the mean hour of the day at which Pink Lady Apples and
 ```{r}
 instacart |>
   group_by(product_name, order_dow) |>
-  summarize(mean_hour = mean(order_hour_of_day))
-  
+  summarize(mean_hour = mean(order_hour_of_day)) |>
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) |>
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour
+  ) |>
+  rename(
+    "Sunday" = "0",
+    "Monday" = "1",
+    "Tuesday" = "2",
+    "Wednesday" = "3",
+    "Thursday" = "4",
+    "Friday" = "5",
+    "Saturaday" = "6"
+  ) |>
+  knitr::kable(
+    caption = "Mean Hour of Day at Which Following Products are Ordered:"
+  )
 ```
 
 
