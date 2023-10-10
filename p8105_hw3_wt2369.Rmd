@@ -97,5 +97,26 @@ knitr::kable(
   caption = "Most Popular Items in Following Aisles"
 )
 
+# Simpler way:
+
+instacart |>
+  group_by(aisle, product_name) |>
+  filter(
+    aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")
+    ) |>
+  summarize(count = n()) |> 
+  arrange(desc(count)) |>
+  slice(1:3) |>
+  knitr::kable(caption = "Most Popular Items in Following Aisles")
 ```
+
+__4. Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).__
+
+```{r}
+instacart |>
+  group_by(product_name, order_dow) |>
+  summarize(mean_hour = mean(order_hour_of_day))
+  
+```
+
 
