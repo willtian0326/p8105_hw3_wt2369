@@ -218,7 +218,7 @@ __4. Make a two-panel plot showing, for the years 2006, and 2010, distribution o
 
 First, with scatter plot and line:
 
-```{r}
+```{r, fig.width=10}
 data_value_2006 =
   brf |>
   filter(
@@ -251,7 +251,7 @@ gridExtra::grid.arrange(data_value_2006, data_value_2010, ncol = 2)
 
 Now with dodged bar charts:
 
-```{r}
+```{r, fig.height=10}
 data_value_2006 =
   brf |>
   filter(
@@ -338,7 +338,7 @@ In order to compare the education status between two genders, I created a dodged
 
 __3. Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot.__
 
-```{r}
+```{r, fig.width=10}
 total_lh =
   combined_df |>
   mutate(
@@ -377,6 +377,61 @@ gridExtra::grid.arrange(total_lh, total_h, total_mh, ncol = 3)
 
 After plotting total activities against age for all three education level groups, a smooth line is fitted to the scatter plot to demonstrate the trend. Overall, female participants show higher levels of total daily activities than males across all education levels. For both genders and all education levels, total daily activities tend to decrease with the increase of age, and this trend is most prominent in "Less than high school" and "High school equivalent" groups. In "More than high school" education level group, the decrease is a lot slower.
 
+__4. Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.__
+
+```{r, fig.width=10}
+minute_lh =
+  combined_df |>
+  filter(education == "Less than high school") |>
+  select(-c(seqn, education, age, bmi)) |>
+  pivot_longer(
+    cols = -"sex",
+    names_to = c("useless", "minute"),
+    names_sep = 'n',
+    names_transform = list(minute = as.numeric),
+    values_to = "activity"
+  ) |> 
+  select(-useless) |>
+  ggplot(aes(x = minute, y = activity, group = sex, color = sex)) +
+  ylim(0, 20) + geom_smooth() + theme(legend.position = "bottom", axis.text.x=element_blank()) + 
+  labs(title = "Less than high school", x = "Time in Minutes", y = "Activity")
+
+minute_h =
+  combined_df |>
+  filter(education == "High school equivalent") |>
+  select(-c(seqn, education, age, bmi)) |>
+  pivot_longer(
+    cols = -"sex",
+    names_to = c("useless", "minute"),
+    names_sep = 'n',
+    names_transform = list(minute = as.numeric),
+    values_to = "activity"
+  ) |> 
+  select(-useless) |>
+  ggplot(aes(x = minute, y = activity, group = sex, color = sex)) +
+  ylim(0, 20) + geom_smooth() + theme(legend.position = "bottom", axis.text.x=element_blank()) +
+  labs(title = "High school equivalent", x = "Time in Minutes", y = "Activity")
+
+minute_mh =
+  combined_df |>
+  filter(education == "More than high school") |>
+  select(-c(seqn, education, age, bmi)) |>
+  pivot_longer(
+    cols = -"sex",
+    names_to = c("useless", "minute"),
+    names_sep = 'n',
+    names_transform = list(minute = as.numeric),
+    values_to = "activity"
+  ) |> 
+  select(-useless) |>
+  ggplot(aes(x = minute, y = activity, group = sex, color = sex)) +
+  ylim(0, 20) + geom_smooth() + theme(legend.position = "bottom", axis.text.x=element_blank()) +
+  labs(title = "More than high school", x = "Time in Minutes", y = "Activity")
+
+gridExtra::grid.arrange(minute_lh, minute_h, minute_mh, ncol = 3)
+```
+
+After plotting activities on a minute-by-minute timeline for participants in all three education level groups, I chose to hide the scatter points and minute values on the x-axis and only left a smooth line on the plot for better visibility. There is no apparent differences between the three groups in terms of activity level. However, there is a clear trend of activity level being the lowest right after the start (midnight) of the timeline and peaks in the morning / midday. The trend corresponds with common sense. Furthermore, females show a slightly higher activity level across different education levels throughout the day. 
 
 
 
