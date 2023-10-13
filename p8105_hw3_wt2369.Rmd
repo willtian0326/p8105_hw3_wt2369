@@ -216,8 +216,10 @@ Different states are grouped and colored. The plot shows averaged `data_value` o
 
 __4. Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.__
 
+First, with scatter plot and line:
+
 ```{r}
-q4_2006 =
+data_value_2006 =
   brf |>
   filter(
     year == 2006,
@@ -231,7 +233,7 @@ q4_2006 =
   labs(title = "Year 2006", x = "Location in NY", y = "Data Value")
 
 
-q4_2010 =
+data_value_2010 =
   brf |>
   filter(
     year == 2010,
@@ -244,12 +246,13 @@ q4_2010 =
   scale_x_discrete(guide = guide_axis(angle = 90)) +
   labs(title = "Year 2010", x = "Location in NY", y = "Data Value")
 
-gridExtra::grid.arrange(q4_2006, q4_2010, ncol = 2)
+gridExtra::grid.arrange(data_value_2006, data_value_2010, ncol = 2)
 ```
 
+Now with dodged bar charts:
 
 ```{r}
-q4_2006 =
+data_value_2006 =
   brf |>
   filter(
     year == 2006,
@@ -261,7 +264,7 @@ q4_2006 =
   theme(legend.position = "right")
 
 
-q4_2010 =
+data_value_2010 =
   brf |>
   filter(
     year == 2010,
@@ -272,7 +275,7 @@ q4_2010 =
   labs(title = "Year 2010", x = "Location in NY", y = "Data Value") +
   theme(legend.position = "right")
 
-gridExtra::grid.arrange(q4_2006, q4_2010, nrow = 2)
+gridExtra::grid.arrange(data_value_2006, data_value_2010, nrow = 2)
 ```
 
 In order to show the data value of responses through counties in NY in 2 different years, I included both scatter plots and bar plots. In both of them, different responses are colored differently, and the plot shows relationship of data value against locations. In 2006, New York County had the highest value in "Excellent" responses, whereas that goes to Westchester County. 
@@ -287,7 +290,7 @@ demo_df =
   janitor::clean_names() |>
   drop_na() |>
   filter(age >= 21) |>
-  mutate(sex = recode_factor(sex, '1' = 'male', '2' = 'female', .ordered = T)) |>
+  mutate(sex = recode_factor(sex, '1' = 'Male', '2' = 'Female', .ordered = T)) |>
   mutate(education = recode_factor(education, 
                            '1' = 'Less than high school',
                            '2' = 'High school equivalent',
@@ -304,6 +307,75 @@ combined_df =
 ```
 
 For the demographic data `demo_df`, I dropped all NA values, filtered out entries with age < 21 years old, and recoded sex and education as ordered factors taking human readable values. I then imported the accelerometer dataset and merged it to the demographic dataset. The resulting `combined_df` contains accelerometer reading data from individuals that satisfy the following conditions: greater than or equal to 21 years of age, and no missing demographic data.
+
+__2. Produce a reader-friendly table for the number of men and women in each education category, and create a visualization of the age distributions for men and women in each education category. Comment on these items.__
+
+```{r}
+demo_df |>
+  group_by(sex, education) |>
+  summarise(count = n()) |>
+  pivot_wider(
+    names_from = education,
+    values_from = count
+  ) |>
+  knitr::kable()
+```
+
+Above is a 2x3 table showing education status of males and females in the study. The table was created with `group_by()`, `summarize()`, and `kable()` functions.
+
+```{r}
+demo_df |>
+  group_by(sex, education) |>
+  summarise(count = n()) |>
+  ggplot(aes(x = education, y = count, fill = sex)) +
+  geom_col(position = "dodge") +
+  theme_minimal() + 
+  labs(title = "Education Status by Gender", x = "Education", y = "Count") +
+  guides(fill=guide_legend(title="Gender"))
+```
+
+In order to compare the education status between two genders, I created a dodged bar chart with education status on the x-axis and count on the y-axis. The bars are colored according to gender. Overall, male and female counts in "Less than high school" and "More than high school" categories are pretty similar, whereas male count surpasses female count substantially in "High school equivalent" category.
+
+__3. Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot.__
+
+```{r}
+total_lh =
+  combined_df |>
+  mutate(
+    total = rowSums(combined_df[-(1:5)])
+  ) |>
+  filter(education == "Less than high school") |>
+  ggplot(aes(x = age, y = total, group = sex, color = sex)) +
+  geom_point() + geom_smooth() +
+  labs(title = "Less than high school", x = "Age", y = "Total Activities") +
+  theme_minimal() + theme(legend.position = "bottom")
+
+total_h =
+  combined_df |>
+  mutate(
+    total = rowSums(combined_df[-(1:5)])
+  ) |>
+  filter(education == "High school equivalent") |>
+  ggplot(aes(x = age, y = total, group = sex, color = sex)) +
+  geom_point() + geom_smooth() +
+  labs(title = "High school equivalent", x = "Age", y = "Total Activities") +
+  theme_minimal() + theme(legend.position = "bottom")
+
+total_mh =
+  combined_df |>
+  mutate(
+    total = rowSums(combined_df[-(1:5)])
+  ) |>
+  filter(education == "More than high school") |>
+  ggplot(aes(x = age, y = total, group = sex, color = sex)) +
+  geom_point() + geom_smooth() +
+  labs(title = "More than high school", x = "Age", y = "Total Activities") +
+  theme_minimal() + theme(legend.position = "bottom")
+
+gridExtra::grid.arrange(total_lh, total_h, total_mh, ncol = 3)
+```
+
+After plotting total activities against age for all three education level groups, a smooth line is fitted to the scatter plot to demonstrate the trend. Overall, female participants show higher levels of total daily activities than males across all education levels. For both genders and all education levels, total daily activities tend to decrease with the increase of age, and this trend is most prominent in "Less than high school" and "High school equivalent" groups. In "More than high school" education level group, the decrease is a lot slower.
 
 
 
